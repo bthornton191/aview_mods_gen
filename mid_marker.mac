@@ -1,0 +1,9 @@
+!USER_ENTERED_COMMAND athorn mid_marker
+!$part:t=part
+!$i_marker:t=marker
+!$j_marker:t=marker
+!END_OF_PARAMETERS
+marker create &
+	marker_name = (eval(unique_partial_name($part, "marker"))) &
+	location = (eval(dx($j_marker, $i_marker, $i_marker)/2)), (eval(dy($j_marker, $i_marker, $i_marker)/2)), (eval(dz($j_marker, $i_marker, $i_marker)/2)) &
+	relative_to = $i_marker

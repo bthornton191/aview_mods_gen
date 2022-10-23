@@ -1,0 +1,15 @@
+def com update=off
+group create group=.athorn.tmp objects=(eval(.select_list.objects_in_group))
+var set var=$_self.parent str=(eval(.select_list.objects[1].parent))
+var set var=$_self.type str=(eval(db_type(.select_list.objects[1])))
+for var=$_self.tmp object=(eval(db_children($_self.parent, $_self.type)))
+   if cond=(eval(db_filter_name(.select_list.objects, eval($_self.tmp.object_value.name))==""))
+      entity attributes entity_name=(eval($_self.parent) // "." // eval($_self.tmp.object_value.name)) visibility=off
+   else
+      entity attributes entity_name=(eval($_self.parent) // "." // eval($_self.tmp.object_value.name)) visibility=on
+   end
+end
+
+group modify group=.select_list objects=(eval(.athorn.tmp.objects_in_group))
+group delete group_name = .athorn.tmp
+interface model_browser refresh

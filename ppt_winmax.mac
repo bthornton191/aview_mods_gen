@@ -1,0 +1,9 @@
+!USER_ENTERED_COMMAND athorn ppt_winmax
+! -----------------------------------------------------------------
+! MACRO NAME:  set_2
+! DESCRIPTION: 
+! AUTHOR:      Ben Thornton (ben.thornton@mscsoftware.com)
+var set var=$_self._tmp_ int=(run_python_code("import win32gui, win32con"))
+var set var=$_self._tmp_ int=(run_python_code("window_list = []"))
+var set var=$_self._tmp_ int=(run_python_code("win32gui.EnumWindows(lambda hwnd, _ctx : window_list.append(hwnd) if win32gui.IsWindowVisible(hwnd) else None, None)"))
+var set var=$_self._tmp_ int=(run_python_code("[win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE) for hwnd in window_list if 'Adams PostProcessor' in win32gui.GetWindowText(hwnd)]"))

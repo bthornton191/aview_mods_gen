@@ -1,0 +1,4 @@
+def com update=off
+group empty group=.select_list
+group modify group=.select_list objects=(eval(pick_object("all")))
+interface model_browser refresh

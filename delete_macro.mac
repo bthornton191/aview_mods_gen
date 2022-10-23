@@ -1,0 +1,178 @@
+!USER_ENTERED_COMMAND mdi delete_macro
+! START_MACRO $_self
+!$force_delete_all:t=list(yes,no):d=no
+!END_OF_PARAMETERS
+if  cond = (db_count( "select_list","objects") == 0)
+	return
+end
+!
+interface model_browser set auto_refresh = off
+var set var=$_parent.tmpAlert int=0
+if cond=(db_object_count(db_delete_dependents(.select_list)) > 0 )
+	var set var = $_self.msgStr string_value= ("The deleted objects have dependents that have not been selected for deletion."//str_chr(10))
+	var set var = $_self.msgStr string_value= (eval($_self.msgStr // "Clicking on the Close button(X) will cancel the request for deletion."))
+
+	if condition=($force_delete_all==no)
+		var set var=$_parent.tmpAlert int = (eval(alert("Warning", $_self.msgStr, "Delete All","Remove Parameteric Expressions","List and Highlight Dependencies", 1)))
+	else
+		var set var=$_parent.tmpAlert int = 1
+	 
+	 end
+
+	var del var=$self.msgStr
+	if cond = ($_parent.tmpAlert != 0)
+		var set var=$_parent.tmpCursor int = (eval(set_busy_cursor(1)))
+	end
+	if cond = ($_parent.tmpAlert == 2)
+	! ADMS-17521 If a variable being deleted is linked to another variable, assign the value of the variable being deleted to the linked variable
+	for var=.MDI.obj group=select_list
+		if cond=((eval(DB_TYPE(.MDI.obj))) == "variable")
+			for var=.MDI.abc obj=(eval(db_dependents(.MDI.obj,"Variable")))
+				if cond=((eval(.MDI.abc.object_value.type)) == 1)
+				var set var=(eval(.MDI.abc.object_value)) real_value=(eval(.MDI.obj))
+			elseif cond=((eval(.MDI.abc.object_value.type)) == 2)
+				var set var=(eval(.MDI.abc.object_value)) integer_value=(eval(.MDI.obj))
+			elseif cond=((eval(.MDI.abc.object_value.type)) == 3)
+				var set var=(eval(.MDI.abc.object_value)) string_value=(eval(.MDI.obj.object_value.string_value))
+				end
+			end
+		end
+	end
+		group create group_name = .tmp_delete_group 
+		var set var=$_self.part_index int=1
+		var set var=$_self.not_deleted_patrs object=(none)
+		for var=.MDI.obj group=select_list
+		 if cond=((eval(DB_TYPE(.MDI.obj.object_value))) == "part")
+			group objects add objects_in_group = (eval(.MDI.obj.object_value)) group_name = .tmp_delete_group
+			if cond=((eval(DB_OBJECT_COUNT( (DB_FILTER_TYPE( (DB_DELETE_DEPENDENTS( .tmp_delete_group)),"ude_instance")))))!=0)
+				group objects remove objects_in_group = (eval(.MDI.obj.object_value)) group_name = .select_list
+				var set var=$_self.not_deleted_patrs object=(eval(.MDI.obj.object_value)) index=(eval($_self.part_index))
+				var set var=$_self.part_index int=(eval($_self.part_index+1))
+			end
+			group empty group_name =  .tmp_delete_group
+		end
+	  end
+	  group delete group_name = .tmp_delete_group 
+	 if cond=((eval($_self.not_deleted_patrs.object_value[1])) != (none))
+		variable set variable=$_self.messageStr &
+		  string_value="WARNING : The following parts are not deleted",& 
+						"as one or more machinery objects depends on it"
+		  for variable=$_self.cnt start=1 end=(eval($_self.part_index-1))
+				variable set variable=$_self.messageStr &
+				string_value=(eval("              "//$_self.not_deleted_patrs.object_value[$_self.cnt])) &
+					index=(eval($_self.cnt+2))
+		  end	
+	 interface push_button modify &
+			push_button_name=.gui.msg_box.close &
+			enabled="yes"	
+		interface field set &
+			field_name=.gui.msg_box.message &
+			 string=(eval($_self.messageStr))
+		interface dialog_box display &
+			dialog_box_name=.gui.msg_box
+		var delete var=$_self.messageStr
+	 end
+		var del var=$_self.part_index 
+		var del var=$_self.not_deleted_patrs 
+		var set var=$_parent.tmp int=(eval(db_del_unparam_dependents(.select_list)))
+		var del var=$_parent.tmp
+	end
+	if cond = ($_parent.tmpAlert == 3)
+		var set var=$_parent.tmpCursor int = (eval(set_busy_cursor(0)))
+		variable set variable=$_self.depObjs &
+			object_value=(eval(db_delete_dependents(.select_list)))
+		variable set variable=$_self.numDeps &
+			integer_value=(eval(db_count($_self.depObjs.self,"object_value")))
+		variable set variable=$_self.messageStr &
+			string_value="The objects that depend on the object that you are trying to delete have", &
+							"been added to the Select List and are listed below.  These objects must", &
+							"also be deleted before deleting this object.", &
+							" ", &
+							"Dependent objects include:"
+		!
+		undo begin suppress=yes
+		!----
+		for variable=$_self.cnt start=1 end=(eval($_self.numDeps))
+			variable set variable=$_self.messageStr &
+				string_value=(eval("              "//$_self.depObjs.object_value[$_self.cnt])) &
+				index=(eval($_self.cnt+5))
+		end	
+		interface push_button modify &
+			push_button_name=.gui.msg_box.close &
+			enabled="yes"	
+		interface field set &
+			field_name=.gui.msg_box.message &
+			string=(eval($_self.messageStr))
+		interface dialog_box display &
+			dialog_box_name=.gui.msg_box
+		group object add group=.select_list &
+			objects=(eval(db_delete_dependents(.select_list)))
+		var delete var=$_self.messageStr
+		var delete var= $_self.depObjs
+		var delete var = $_self.numDeps 
+		undo end
+	end
+	if cond = ($_parent.tmpAlert == 1 || $_parent.tmpAlert == 2)
+		for var=.MDI.obj group=select_list
+			! Gear set UDEs may have special code.
+			if cond=((eval(DB_TYPE(.MDI.obj))) == "gear_set" || DB_TYPE(.MDI.obj.object_value) == "belt" || DB_TYPE(.MDI.obj.object_value) == "actuator" || DB_TYPE(.MDI.obj.object_value) == "chain_links")
+				if cond=(ude_method_exists(.MDI.obj, "pre_delete"))
+					var set var=$_self.returnValue int=(ude_invoke_method_user(.MDI.obj, "pre_delete", "pre_delete"))
+					var del var=$_self.returnValue
+				end
+			end
+		end
+		group object add group=select_list &
+				objects=(eval(db_delete_dependents(.select_list)))
+		group object add group=select_list &
+				objects=(eval(db_delete_flexbody_orphans(.select_list)))
+	else
+		var del var=$_parent.tmpAlert
+		return
+	end
+else
+!  Fix ADMS-35898
+	group object add group=select_list  &
+		objects=(eval(db_delete_flexbody_orphans(.select_list)))
+end
+
+! ADMS-21223
+for var=.MDI.obj group=select_list
+	if cond = ((eval(DB_TYPE(.MDI.obj))) == "fe_part")
+		group object remove group = select_list object = (eval(DB_CHILDREN( .MDI.obj , "bspline" )))
+	end
+end
+!
+!
+! Special processing (e.g. if curve legend is to be deleted,  delete curve)
+for var=.MDI.obj group=select_list
+  ! Check for curve/scatter legends and replace then with the curve/scatter in select list
+	if cond=(rows(.MDI.obj)==1) 
+  		if cond=((eval(DB_TYPE(.MDI.obj))) == "note")
+	 		if cond=(DB_TYPE(.MDI.obj.object_value.parent) == "plot_curve" || DB_TYPE(.MDI.obj.object_value.parent) == "complex_scatter")
+				group object add group=select_list object=(.MDI.obj.object_value.parent)
+				group object remove group=select_list object=(.MDI.obj)
+	 		end
+  		end
+
+		! UDEs may have special code.
+		if cond=(ude_method_exists(.MDI.obj, "pre_delete"))
+			var set var=$_self.returnValue int=(ude_invoke_method_user(.MDI.obj, "pre_delete", "pre_delete"))
+			var del var=$_self.returnValue
+		end
+ 	end  
+	 
+	if cond=((eval(DB_TYPE(.MDI.obj))) == "bspline")
+	 	if cond=(DB_TYPE(.MDI.obj.object_value.parent) == "fe_part") 
+			var set var = $_self.returnValue int = (eval(DeleteWarningForFePartCurve(.MDI.obj)))		
+			var delete var = $_self.returnValue 
+			return		
+	 	end
+  	end
+end
+var del var=$_parent.tmpAlert
+group object delete group=select_list remove=yes
+var set var=$_parent.tmpCursor int = (eval(set_busy_cursor(0)))
+interface model_browser set auto_refresh = on refresh_now = yes 
+var del var=$_parent.tmpCursor
+! END_MACRO $_self

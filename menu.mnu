@@ -1,0 +1,763 @@
+MENU1  &File
+     NAME=file
+     HELP=Read and write files, print model views, or exit Adams
+     BUTTON2  &New Database::Ctrl+N
+            NAME=new
+            HELP=Reset Database by reading default Adams View Binary File from current or installation directory
+            CMD=! Check changed db now, so that we can suppress the confusing 'continue with read' later
+            CMD=! Do not do anything before DB_CHANGED() and nothing after file bin read so that DB_CHANGED() is not confused
+            CMD=if cond=(eval(is_simulating()))
+            CMD=	aview toolkit warning warning = (eval(\"A simulation is running. Stop it or allow it to finish before creating New Database.\"))
+            CMD=	return
+            CMD=end
+            CMD=if cond=( DB_CHANGED() && db_default(.system_defaults, "model") != (none) )
+            CMD=   var set var=.mdi.file_menu_tmp_name str=(eval(db_default (.system_defaults, "model").name))
+            CMD=   if cond=( DB_EXISTS(".mdi.LAST_DATABASE_NAME"))
+            CMD=      if cond=(!str_is_space(.mdi.LAST_DATABASE_NAME))
+            CMD=         var set var=.mdi.file_menu_tmp_name str=(eval(.mdi.LAST_DATABASE_NAME))
+            CMD=      end
+            CMD=   end
+            CMD=   var set var = .mdi.file_menu_status int = (eval(alert("Warning", "Database has changed. Do you want to save database as '"//.mdi.file_menu_tmp_name//"' before proceeding?","Yes","No", "Cancel", 1)))
+            CMD=   if cond=( .mdi.file_menu_status != 3  && .mdi.file_menu_status != 0)
+            CMD=      if cond=( .mdi.file_menu_status == 1)
+            CMD=         file binary write file = (eval( .mdi.file_menu_tmp_name ))
+            CMD=      end
+            CMD=   end
+            CMD=else
+            CMD=   var set var=.mdi.file_menu_status int=-1
+            CMD=end
+            CMD=var set var=.mdi.file_menu_tmp_name str=""
+            CMD=var set var=.mdi.mdi_aview_bin str=(eval(getenv("MDI_AVIEW_BIN")))
+            CMD=if cond=( .mdi.file_menu_status != 3 && .mdi.file_menu_status != 0)
+            CMD=   if cond=( file_exists( "./aview.bin" ) )
+            CMD=      var set var = .mdi.file_menu_status int = (eval(alert("Warning", "A default database file 'aview.bin' exists in the current working directory.","Read this local file","Use installation file", "Cancel", 1)))
+            CMD=      if cond=( .mdi.file_menu_status == 1 )
+            CMD=         var set var=.mdi.file_menu_tmp_name str="aview"
+            CMD=      elseif cond=( .mdi.file_menu_status == 2 )
+            CMD=         if cond=(.mdi.mdi_aview_bin != "")
+            CMD=            var set var=.mdi.file_menu_tmp_name str=(eval(.mdi.mdi_aview_bin))
+            CMD=         else
+            CMD=            var set var=.mdi.file_menu_tmp_name str=(eval( getenv( "aview_bindir" )//"/aview.bin" ))
+            CMD=         end
+            CMD=      else
+            CMD=         var set var=.mdi.file_menu_tmp_name str=""
+            CMD=      end
+            CMD=   else
+            CMD=      if cond=(.mdi.mdi_aview_bin != "")
+            CMD=         var set var=.mdi.file_menu_tmp_name str=(eval(.mdi.mdi_aview_bin))
+            CMD=      else
+            CMD=         var set var=.mdi.file_menu_tmp_name str="aview"
+            CMD=      end
+            CMD=   end
+            CMD=end
+            CMD=if cond=( .mdi.file_menu_tmp_name != "" )
+            CMD=   file bin read file=(eval( .mdi.file_menu_tmp_name )) alert=no
+            CMD=   file com rea fil=aviewAS
+            CMD=   var set var=.file_menu_status int=(eval( HIDE_CMD_WINDOW() ))
+     BUTTON2  &Open Database::Ctrl+O
+            NAME=open
+            HELP=Open a Database File (Adams View Binary File)
+            CMD=! Check changed db now, so that we can suppress the confusing 'continue with read' later
+            CMD=! Do not do anything before DB_CHANGED() and nothing after file bin read so that DB_CHANGED() is not confused
+            CMD=if cond=( DB_CHANGED() && db_default(.system_defaults, "model") != (none) )
+            CMD=   var set var=.mdi.file_menu_tmp_name str=(eval(db_default (.system_defaults, "model").name))
+            CMD=   if cond=( DB_EXISTS(".mdi.LAST_DATABASE_NAME"))
+            CMD=      if cond=(!str_is_space(.mdi.LAST_DATABASE_NAME))
+            CMD=         var set var=.mdi.file_menu_tmp_name str=(eval(.mdi.LAST_DATABASE_NAME))
+            CMD=      end
+            CMD=   end
+            CMD=   var set var = .mdi.file_menu_status &
+            CMD=      int = (eval(alert("Warning", "Database has changed. Do you want to save database as '"//.mdi.file_menu_tmp_name//"' before proceeding?","Yes","No", "Cancel", 1)))
+            CMD=   if cond=( .mdi.file_menu_status != 3  && .mdi.file_menu_status != 0)
+            CMD=      if cond=( .mdi.file_menu_status == 1 )
+            CMD=         file binary write file = (eval( .mdi.file_menu_tmp_name ))
+            CMD=      end
+            CMD=   end
+            CMD=else
+            CMD=   var set var=.mdi.file_menu_status int=-1
+            CMD=end
+            CMD=if cond=( .mdi.file_menu_status != 3  && .mdi.file_menu_status != 0)
+            CMD=   file bin read alert=no file=?
+            CMD=end
+     BUTTON2  &Save Database::Ctrl+S
+            NAME=save
+            HELP=Save Database (Adams View Binary File)
+            CMD=var set var=.mdi.file_menu_tmp_name str=""
+            CMD=if cond=( DB_EXISTS(".mdi.LAST_DATABASE_NAME"))
+            CMD=   if cond=(!str_is_space(.mdi.LAST_DATABASE_NAME))
+            CMD=      var set var=.mdi.file_menu_tmp_name str=(eval(.mdi.LAST_DATABASE_NAME))
+            CMD=   end
+            CMD=end
+            CMD=if cond=( str_is_space( .mdi.file_menu_tmp_name ))
+            CMD=   if cond=( DB_DEFAULT(.system_defaults, "model") != (none) )
+            CMD=      var set var=.mdi.file_menu_tmp_name str=(eval(DB_DEFAULT(.system_defaults, "model").name//".bin"))
+            CMD=   end
+            CMD=end
+            CMD=if cond=( !str_is_space(.mdi.file_menu_tmp_name) )
+            CMD=   ! Give info about file name and opportunity to cancel also if file doesn't exist yet
+            CMD=   if cond=( ! file_exists( .mdi.file_menu_tmp_name ) )
+            CMD=      if cond=(eval(alert("Info", "Saving current database as '"//.mdi.file_menu_tmp_name//"'.","OK", "Cancel","", 1) != 2))
+            CMD=         var set var=.mdi.LAST_DATABASE_NAME str=(eval(.mdi.file_menu_tmp_name))
+            CMD=         file binary write file=(eval(.mdi.file_menu_tmp_name ))
+            CMD=      end
+            CMD=   else
+            CMD=      var set var=.mdi.LAST_DATABASE_NAME str=(eval(.mdi.file_menu_tmp_name))
+            CMD=      file binary write file=(eval(.mdi.file_menu_tmp_name)) alert=yes
+            CMD=   end
+            CMD=else
+            CMD=   var set var = .mdi.file_menu_status &
+            CMD=      int = (eval(alert("Error", "No model exists. Create one first or use 'Save Database As..'","OK","", "", 1)))
+            CMD=end
+     BUTTON2  Save Database &As...
+            NAME=save_as
+            HELP=Save Database (Adams View Binary File) under a special name or using a special format
+            CMD=interface dialog display dialog=.gui.database_save_as
+     SEPARATOR2
+     BUTTON2  &Import...
+            NAME=import
+            CMD=int dia dis dia=.gui.file_import
+     BUTTON2  &Export...
+            CMD=int dia dis dia=.gui.file_export
+     SEPARATOR2
+     BUTTON2  &Print...
+            NAME=print
+            HELP=Send page(s) to a printer or a postscript file.
+            CMD=if condition=(getenv("OS") == "Windows_NT")
+            CMD=   hardcopy language=windows_native
+            CMD=else
+            CMD=   interface dialog display dialog=.gui.print_panel
+            CMD=end
+     SEPARATOR2
+     BUTTON2  Select &Directory...
+            NAME=select_dir
+            HELP=Specify the current working directory
+            CMD=var set var=$_self.newdir str=(eval(SELECT_DIRECTORY(".")))
+            CMD=if cond=(!str_is_space($_self.newdir))
+            CMD=   var set var=$_self.success int=(eval(CHDIR($_self.newdir)))
+            CMD=   var del var=$_self.success
+            CMD=end
+            CMD=var del var=$_self.newdir
+     SEPARATOR2
+     BUTTON2  E&xit::Ctrl+Q
+            NAME=exit
+            HELP=Exit the Adams Modeling and Simulation System
+            CMD=quit
+MENU1  &Edit
+     NAME=edit
+     HELP=Change modeling entities or perform actions on them (Select entities before editing them)
+     BUTTON2  &Undo::Ctrl+Z
+            NAME=undo
+            HELP=Undo the last command
+            CMD=undo backward
+     BUTTON2  &Redo::Ctrl+Y
+            NAME=redo
+            HELP=Redo the last undone operation
+            CMD=undo forward
+     SEPARATOR2
+     BUTTON2  &Modify...::Ctrl+E
+            NAME=modify
+            HELP=Display the Modify dialog box for the selected objects
+            CMD=if cond=( eval (db_count( "select_list", "objects" ) == 0 ))
+            CMD=   group modify group=select_list obj=(eval(select_object(NONE, "", "")))
+            CMD=end
+            CMD=if cond=( eval( db_count( "select_list", "objects" ) > 0 ))
+            CMD=   mdi modify_macro
+            CMD=end
+     BUTTON2  Re&name...::Ctrl+R
+            HELP=Rename the selected object
+            CMD=if  cond = (db_count( "select_list","objects") == 0)
+            CMD=   group object add group=select_list &
+            CMD=         objects = (eval(select_objects( (none), "", "")))
+            CMD=   if cond = (db_count("select_list", "objects") == 0)
+            CMD=      return
+            CMD=   end
+            CMD=end
+            CMD=file log comm=off
+            CMD=mdi rename_macro
+     BUTTON2  &Appearance...::Ctrl+A
+            HELP=Modify the appearance of selected objects
+            CMD=if cond=(eval(db_count("select_list", "objects") == 0))
+            CMD=   group modify group=.select_list obj=(eval(select_objects(NONE, "", "")))
+            CMD=end
+            CMD=if cond=(eval(db_count("select_list", "objects") > 0))
+            CMD=   int dia dis dia=edit_attributes_panel par=(user_string(".select_list.objects"))
+            CMD=end
+     BUTTON2  &Copy::Ctrl+C
+            NAME=copy
+            HELP=Copy the selected objects
+            CMD=undo begin
+            CMD=   if cond=( eval( db_count( ".select_list", "objects" ) == 0 ))
+            CMD=      group modify group=.select_list obj=(eval(select_object(NONE, "", "")))
+            CMD=   end
+            CMD=   if cond=( eval(db_count( ".select_list", "objects" ) > 0 ))
+            CMD=      group object copy group=.select_list new_group=.copy_list
+            CMD=      if cond=( eval(db_count( ".copy_list", "objects" ) > 0 ))
+            CMD=		group modify group=.SELECT_LIST object=(eval(.copy_list.objects))
+            CMD=		if con=(db_type(.copy_list.objects[1]) == "Model")
+            CMD=			 model display model=(eval(.copy_list.objects[1]))
+            CMD=   			 if cond=(!db_exists(db_ancestor(db_default(.system_defaults,"model"),"model")))
+            CMD=      			mdi measure undisplay measure = .*
+            CMD=      		 end
+            CMD=		end
+            CMD=		group delete group=.copy_list
+            CMD=	  end
+            CMD=   end
+            CMD=undo end
+     BUTTON2  &Delete::Ctrl+X
+            NAME=delete
+            HELP=Delete the selected objects
+            CMD=if  cond = (db_count( "select_list","objects") == 0)
+            CMD=   group object add group=select_list &
+            CMD=         objects = (eval(select_objects( (none), "", "")))
+            CMD=   if cond = (db_count("select_list", "objects") == 0)
+            CMD=      return
+            CMD=   end
+            CMD=end
+            CMD=mdi delete_macro
+     BUTTON2  &Move...
+            HELP=Display the Precision Move dialog box
+            CMD=file log comm=off
+            CMD=if cond=( eval( db_count( .select_list, "objects" ) == 0 ))
+            CMD=   group modify group=select_list obj=(eval(select_object(NONE, "*", "modeling")))
+            CMD=end
+            CMD=if cond=( db_count( .select_list, "objects" ) > 0 )
+            CMD=   if cond=(db_count( .select_list, "objects" )== 1)
+            CMD=      interface dia display dialog=.gui.precision_move param=(eval( .select_list.objects ))
+            CMD=   else
+            CMD=      interface dia display dialog=.gui.precision_move param=".select_list"
+            CMD=   end
+            CMD=end
+     SEPARATOR2
+     BUTTON2  &Activate
+            HELP=Activate or Deactivate the selected objects
+            CMD=if cond=( eval(db_count( "select_list", "objects" ) ))
+            CMD=   entity attributes entity_name=(eval(.select_list.objects)) active=no_opinion depend=no_opinion
+            CMD=else
+            CMD=   entity attributes entity_name=(eval(select_objects(NONE, "", ""))) active=no_opinion depend=no_opinion
+            CMD=end
+     BUTTON2  D&eactivate
+            HELP=Deactivate the selected objects
+            CMD=if cond=( eval(db_count( "select_list", "objects" ) ))
+            CMD=   entity attributes entity_name=(eval(.select_list.objects)) active=off depend=off
+            CMD=else
+            CMD=   entity attributes entity_name=(eval(select_objects(NONE, "", ""))) active=off depend=off
+            CMD=end
+     SEPARATOR2
+     BUTTON2  &Select List...
+            HELP=Display the Select List Manage dialog box
+            CMD=int dia disp dia=.gui.sel_list_manager_panel
+     BUTTON2  Deselect All::Ctrl+D
+            HELP=Clear all selections
+            CMD=group empty group=SELECT_LIST
+MENU1  &View
+     NAME=view
+     HELP=Control the display tools used to manipulate the environment or display model entities within views
+     BUTTON2  &Part Only...::Shift+P
+            HELP=View a part
+            CMD=if cond=(db_count( "select_list", "objects" )== 1)
+            CMD=   if cond=( db_of_class(.select_list.objects, "part"))
+            CMD=     part display part=(eval( .select_list.objects )) fit_to_view=yes
+            CMD=   elseif cond=( db_of_class(.select_list.objects, "flexible_body"))
+            CMD=     part display flex=(eval( .select_list.objects )) fit_to_view=yes
+            CMD=   elseif cond=( db_of_class(.select_list.objects, "point_mass"))
+            CMD=     part display point=(eval( .select_list.objects )) fit_to_view=yes
+            CMD=   elseif cond=( db_of_class(.select_list.objects, "fe_part"))
+            CMD=     part display fe_part_name=(eval( .select_list.objects )) fit_to_view=yes
+            CMD=   else
+            CMD=     group empty group=select_list
+            CMD=     variable set variable=$_self.bodyObj object=(none)
+            CMD=     variable set variable=$_self.bodyObj object=(eval( select_text (  db_children(db_default(.system_defaults, "model"), "body") )))
+            CMD=     if cond=( db_of_class($_self.bodyObj.object_value, "part"))
+            CMD=       part display part=(eval( $_self.bodyObj )) fit_to_view=yes
+            CMD=     elseif cond=( db_of_class($_self.bodyObj.object_value, "flexible_body"))
+            CMD=       part display flex=(eval( $_self.bodyObj )) fit_to_view=yes
+            CMD=     elseif cond=( db_of_class($_self.bodyObj.object_value, "point_mass"))
+            CMD=       part display point=(eval( $_self.bodyObj )) fit_to_view=yes
+            CMD=  	elseif cond=( db_of_class($_self.bodyObj.object_value, "fe_part"))
+            CMD=    	part display fe_part_name=(eval( $_self.bodyObj )) fit_to_view=yes
+            CMD=     end
+            CMD=     variable delete variable=$_self.bodyObj
+            CMD=   end
+            CMD=else
+            CMD=  group empty group=select_list
+            CMD=  variable set variable=$_self.bodyObj object=(none)
+            CMD=  variable set variable=$_self.bodyObj object=(eval( select_text (  db_children(db_default(.system_defaults, "model"), "body") )))
+            CMD=  if cond=( db_of_class($_self.bodyObj.object_value, "part"))
+            CMD=    part display part=(eval( $_self.bodyObj )) fit_to_view=yes
+            CMD=  elseif cond=( db_of_class($_self.bodyObj.object_value, "flexible_body"))
+            CMD=    part display flex=(eval( $_self.bodyObj )) fit_to_view=yes
+            CMD=  elseif cond=( db_of_class($_self.bodyObj.object_value, "point_mass"))
+            CMD=    part display point=(eval( $_self.bodyObj )) fit_to_view=yes
+            CMD=  elseif cond=( db_of_class($_self.bodyObj.object_value, "fe_part"))
+            CMD=    part display fe_part_name=(eval( $_self.bodyObj )) fit_to_view=yes
+            CMD=  end
+            CMD=  variable delete variable=$_self.bodyObj
+            CMD=end
+     BUTTON2  &Model...::Shift+M
+            HELP=View a Model
+            CMD=if cond=(db_object_count(db_children((none), "model")) == 1)
+            CMD=   default model model=(eval(db_children((none), "model")))
+            CMD=   model display fit_to_view=yes
+            CMD=else
+            CMD=   variable set variable=$_self.tmp object=(none)
+            CMD=   var set var=$_self.tmp obj=(eval(select_text(db_children((none), "model") )))
+            CMD=   if cond=($_self.tmp.object_value != (none))
+            CMD=     model display model=(eval($_self.tmp.object_value)) fit_to_view=yes
+            CMD=     default model model=(eval($_self.tmp.object_value))
+            CMD=   end
+            CMD=	 variable delete variable=$_self.tmp
+            CMD=end
+     BUTTON2  Me&asure...
+            NAME=measure_display
+            HELP=Select measure(s) to display
+            CMD=mdi measure display measure=(eval( select_objects( db_default(.system_defaults, "model"), "", "measure" )))
+     BUTTON2  Re&fresh
+            HELP=Refresh the views
+            CMD=model display fit_to_view=no view=all
+     BUTTON2  &Toolbox and Toolbars...
+            HELP=Define visibility and position of toolbox and toolbars
+            CMD=interface dialog display dialog=refresh_tool_set_panel
+     BUTTON2  &View Accessories...
+            HELP=Define visibility of view grid, triad, and title, as well as the element icons
+            CMD=int dialog display dialog=.gui.view_set_panel
+     SEPARATOR2
+     BUTTON2  &Command Window::F3
+            NAME=cmd
+            HELP=Toggle visibility of command window
+            CMD=interface cmd_window display=toggle
+            CMD=interface cursor warp gui_name=.gui.command_panel.command_line
+     BUTTON2  C&oordinate Window::F4
+            NAME=coord
+            HELP=Toggle visibility of coordinate window
+            CMD=interface coord_window display=toggle
+     BUTTON2  M&essage Window::F5
+            NAME=msg_box
+            HELP=Toggle visibility of message window
+            CMD=if cond =(.gui.msg_box.displayed)
+            CMD=int dialog undisplay dialog=.gui.msg_box
+            CMD=else
+            CMD=int dialog display dialog=.gui.msg_box
+            CMD=end
+     SEPARATOR2
+     MENU2  Pre-&Set
+          BUTTON3  &Front
+                 HELP=Set view to Front
+                 CMD=view manage orient view=front up_axis=(.MDI.up_axis) forward_axis=(.MDI.forward_axis)
+          BUTTON3  &Back
+                 HELP=Set View to Back
+                 CMD=view manage orient view=back up_axis=(.MDI.up_axis) forward_axis=(.MDI.forward_axis)
+          BUTTON3  &Left
+                 HELP=Set View to Left
+                 CMD=view manage orient view=left up_axis=(.MDI.up_axis) forward_axis=(.MDI.forward_axis)
+          BUTTON3  &Right
+                 HELP=Set View to Right
+                 CMD=view manage orient view=right up_axis=(.MDI.up_axis) forward_axis=(.MDI.forward_axis)
+          BUTTON3  &Top
+                 HELP=Set View to Top
+                 CMD=view manage orient view=top   up_axis=(.MDI.up_axis) forward_axis=(.MDI.forward_axis)
+          BUTTON3  B&ottom
+                 HELP=Set View to Bottom
+                 CMD=view manage orient view=bottom  up_axis=(.MDI.up_axis) forward_axis=(.MDI.forward_axis)
+          BUTTON3  &Iso
+                 HELP=Set view to iso
+                 CMD=view manage orient view=iso up_axis=(.MDI.up_axis) forward_axis=(.MDI.forward_axis)
+     MENU2  Pos&ition/Orientation
+          BUTTON3  &Zoom In/Out
+                 HELP=Zoom In/Out
+                 CMD=interface mode repeat=single mode=dyn_view_zoom
+          BUTTON3  Zoom &In
+                 HELP=Zoom In
+                 CMD=view zoom zoom=1.5
+          BUTTON3  Zoom &Out
+                 HELP=Zoom Out
+                 CMD=view zoom zoom=(2/3)
+          BUTTON3  Zoom &Box
+                 HELP=Zoom Box
+                 CMD=interface mode repeat=single mode=view_zoom
+          BUTTON3  &Fit
+                 HELP=Fit entire model in the window
+                 CMD=view zoom auto=on
+          BUTTON3  Fit - &No Ground
+                 HELP=Fits entire model excluding ground part
+                 CMD=view zoom auto=no_ground
+          BUTTON3  &Center
+                 HELP=Select a point as the center of the view
+                 CMD=interface mode repeat=single mode=view_center
+          BUTTON3  O&rigin
+                 HELP=Move the center of the modeling space to the center of the view
+                 CMD=vie cen obj=0,0,0
+          SEPARATOR3
+          BUTTON3  &Translate
+                 HELP=Translate view in view window
+                 CMD=interface mode repeat=single mode=dyn_view_trans
+          BUTTON3  Rotate &X
+                 HELP=Rotate about X axis
+                 CMD=interface mode repeat=single mode=dyn_view_rot_x
+          BUTTON3  Rotate &Y
+                 HELP=Rotate about Y axis
+                 CMD=interface mode repeat=single mode=dyn_view_rot_y
+          BUTTON3  Rot&ate Z
+                 HELP=Rotate about Z axis
+                 CMD=interface mode repeat=single mode=dyn_view_rot_z
+          BUTTON3  &Rotate XY
+                 HELP=Rotate about X and Y axes
+                 CMD=interface mode repeat=single mode=dyn_view_rot_xy
+     BUTTON2  &Layout...
+            HELP=Displays the window layout tool stack
+            CMD=int dia disp dia=Window_Layout
+     MENU2  &Render Mode
+          BUTTON3  &Wireframe
+                 HELP=Sets wireframe rendering mode
+                 CMD=view manage modify render=wireframe
+          BUTTON3  S&olid Fill
+                 HELP=Sets Solid Fill rendering mode
+                 CMD=view manage modify render=solid
+          BUTTON3  S&haded
+                 HELP=Sets Shaded rendering mode
+                 CMD=view manage modify render=shaded
+          BUTTON3  P&recision Fill
+                 HELP=Sets Precision-fill rendering mode
+                 CMD=view manage modify render=psolid
+          BUTTON3  &Precision Shaded
+                 HELP=Sets Precision shaded rendering mode
+                 CMD=view manage modify render=pshaded
+          BUTTON3  &Smooth Shaded
+                 HELP=Sets Smooth shaded rendering mode
+                 CMD=view manage modify render=sshaded
+          BUTTON3  &Hidden Line Removal
+                 HELP=Sets Hidden Line removal rendering mode
+                 CMD=view manage modify render=hiddenline
+     MENU2  Pro&jection
+          BUTTON3  &Orthographic
+                 HELP=Sets projection to orthographic
+                 CMD=view manage modify proj=ortho
+          BUTTON3  &Perspective
+                 HELP=Sets projection to Perspective
+                 CMD=view manage modify proj=persp
+MENU1  Settin&gs
+     NAME=settings
+     HELP=Change modeling and simulation settings according to your preferences
+     BUTTON2  &Coordinate System...
+            HELP=Define the type of coordinate system to use
+            CMD=int dia disp dia=coor_sys_panel
+     BUTTON2  &Working Grid...
+            HELP=Define the properties of the working grid
+            CMD=interface dialog display dialog=grid_params
+     BUTTON2  Object Position &Handle...
+            HELP=Define the properties of the Object Positioning Handle
+            CMD=interface dialog display dialog=object_handle_pos
+     BUTTON2  &Units...
+            HELP=Define the units used
+            CMD=int dia disp dia=units_panel
+     BUTTON2  &Gravity...
+            HELP=Define the gravity field to be used
+            CMD=int dia disp dia=gravity_panel
+     BUTTON2  &Lighting...
+            HELP=Define the light source settings to be used
+            CMD=int dia disp dia=lighting_panel
+     BUTTON2  Stereo &Viewing...
+            HELP=Define the stereo viewing settings to be used
+            CMD=int dia disp dia=stereo_viewing_panel
+     SEPARATOR2
+     BUTTON2  &Icons...
+            HELP=Define size and other attributes of graphic symbols
+            CMD=interface dialog display dialog=icon_att
+     BUTTON2  Co&lors...
+            HELP=Define color map
+            CMD=interface dialog display dialog=edit_colors
+     BUTTON2  View &Background Color...
+            HELP=Define the color of the background for all views
+            CMD=interface dialog display dialog=edit_background_color
+     BUTTON2  &Force Graphics...
+            HELP=Define scale of graphic force vectors
+            CMD=int dia disp dia=force_pref_panel
+     BUTTON2  &Names...
+            HELP=Define the appearance of references to database objects
+            CMD=int dia disp dia=.gui.def_fun
+     MENU2  &Solver
+          BUTTON3  Dynamics...
+                 HELP=Define solver settings for dynamic simulations
+                 CMD=interface dialog display dialog=.gui.sim_set_panel param="dynamics"
+          BUTTON3  &Kinematics...
+                 CMD=interface dialog display dialog=.gui.sim_set_panel param="kinematics"
+          BUTTON3  &Equilibrium...
+                 HELP=Define solver settings for static and quasi-static simulations
+                 CMD=interface dialog display dialog=.gui.sim_set_panel param="equilibrium"
+          BUTTON3  &Initial Conditions...
+                 HELP=Define solver settings for initial conditions simulations
+                 CMD=interface dialog display dialog=.gui.sim_set_panel param="ic"
+          BUTTON3  E&xecutable ...
+                 HELP=Define solver settings for type of solver to use
+                 CMD=interface dialog display dialog=.gui.sim_set_panel param="executable"
+          BUTTON3  Display...
+                 HELP=Define solver settings for display during simulation
+                 CMD=interface dialog display dialog=.gui.sim_set_panel param="display"
+          BUTTON3  &Output...
+                 HELP=Define handling of output analyses and files
+                 CMD=interface dialog display dialog=.gui.sim_set_panel param="output"
+          BUTTON3  O&ptimizer...
+                 HELP=Define solver settings for optimizations
+                 CMD=interface dialog display dialog=.gui.sim_set_panel param="optimization"
+          BUTTON3  De&bugging...
+                 HELP=Define solver settings for debugging information
+                 CMD=interface dialog display dialog=.gui.sim_set_panel param="debugging"
+          BUTTON3  &Contacts...
+                 HELP=Define solver settings for three dimensional contact operations
+                 CMD=interface dialog display dialog=.gui.sim_set_panel param="contacts"
+          BUTTON3  &Linear Solver...
+                 HELP=Define solver settings for linear solver used by the Adams Solver (C++)
+                 CMD=interface dialog display dialog=.gui.sim_set_panel param="linear_solver"
+          BUTTON3  &Flex Bodies...
+                 HELP=Define solver settings for flexible bodies
+                 CMD=interface dialog display dialog=.gui.sim_set_panel param="flex_bodies"
+          BUTTON3  &Advanced...
+                 HELP=Define solver settings
+                 CMD=int opt set opt=.gui.sim_set_panel.o_category value="advanced" exe=yes
+                 CMD=interface dialog display dialog=.gui.sim_set_panel param="advanced"
+     SEPARATOR2
+     BUTTON2  Co&mmand File...
+            HELP=Define View's command parser behavior (Part 1)
+            CMD=interface dialog display dialog=.gui.command_file_set
+     BUTTON2  &Fonts...
+            HELP=Define View's screen and postscript fonts
+            CMD=interface dialog display dialog=.gui.fonts
+     SEPARATOR2
+     BUTTON2  Geometry &Options...
+            HELP=Setup the geometry options for Geometry Import/Export
+            CMD=variable set variable=.gui.interop_option_manager.btDone.drawpargeoms int=1
+            CMD=interface dialog display dialog=.gui.interop_option_manager
+     SEPARATOR2
+     MENU2  &Interface Style
+          BUTTON3  Default
+                 HELP=Switch to the 2011 style interface
+                 DIMMED
+          BUTTON3  Classic
+                 HELP=Switch to the classic interface
+                 CMD= defaults interface style=classic
+     BUTTON2  S&ave Settings
+            HELP=Save (most of) the current settings as defaults for subsequent sessions
+            CMD=mdi settings save
+     BUTTON2  &Restore Settings
+            HELP=Restore saved settings overwriting the current settings
+            CMD=mdi settings restore warn_if_missing=yes
+MENU1  &Tools
+     NAME=tools
+     HELP=Access tools to help manipulate your model and the software environment
+     BUTTON2  &Command Navigator...
+            HELP=Display the command navigator
+            CMD=interface command_builder
+     BUTTON2  &Database Navigator...
+            HELP=Display the Database Navigator
+            CMD=interface database_navigator display=on
+     MENU2  &Function Builder
+          BUTTON3  &Design Mode...::Ctrl+B
+                 HELP=Display the Function Builder in the design mode
+                 CMD=mdi fbDisplay mode="Function Object"
+          BUTTON3  &Runtime Mode...::Shift+Ctrl+B
+                 HELP=Display the Function Builder in the runtime mode
+                 CMD=mdi fbDisplay mode="Runtime Function"
+     BUTTON2  &Table Editor...
+            HELP=Display the Table Editor
+            CMD=int dia disp dia=.gui.main_objecttable
+     BUTTON2  Plugin Manager...
+            HELP=Display the Plugin Manager
+            CMD=var set var=$_self.loadedPlugins str=""
+            CMD=for var=$_self.loopobj object=(eval(db_children(.mdi.plugins,"plugin")))
+            CMD=  if cond=($_self.loadedPlugins == "")
+            CMD=    var set var=$_self.loadedPlugins str=(eval($_self.loopobj.object_value.name))
+            CMD=  else
+            CMD=    var set var=$_self.loadedPlugins str=(eval($_self.loadedPlugins // ":" // $_self.loopobj.object_value.name))
+            CMD=  end
+            CMD=end
+            CMD=variable set variable=$_self.tmp int=(eval(run_python_code("import mdi.pluginmgr.pluginmgr")))
+            CMD=if cond=($_self.tmp == 1)
+            CMD=  variable set variable=$_self.tmp int=(eval(run_python_code("pm=mdi.pluginmgr.pluginmgr.PluginMgr ('" // $_self.loadedPlugins // "', parent="// gui_win_id(.gui.main) //")")))
+            CMD=end
+            CMD=if cond=($_self.tmp == 1)
+            CMD=  variable set variable=$_self.tmp int=(eval(run_python_code("pm.show()")))
+            CMD=end
+            CMD=variable delete variable=$_self.tmp
+     SEPARATOR2
+     BUTTON2  M&easure Distance...
+            HELP=Calculate the distances between positions
+            CMD=interface dialog display dialog=.gui.list_info_measure
+     BUTTON2  &Aggregate Mass...
+            HELP=Calculates the total mass of part(s)
+            CMD=interface dialog display dialog=.gui.aggregate_mass
+     BUTTON2  Remove &Unused Markers...
+            NAME=remove_markers
+            HELP=Removes unused markers from a model
+            CMD=interface dialog display dialog=.gui.dbox_rem_unu_mar
+     SEPARATOR2
+     BUTTON2  &Merge Two Models...
+            HELP=Merge two models
+            CMD=int dialog display dialog=.gui.model_merge
+     BUTTON2  Model To&pology Map
+            HELP=Lists a table outlining the topology of the default model
+            CMD=info_window empty
+            CMD=list_info topology
+     BUTTON2  Model &Verify
+            HELP=Verify the model
+            CMD=model verify
+     SEPARATOR2
+     BUTTON2  &System Command...
+            NAME=Execute_System_Command
+            HELP=Execute System Command
+            CMD=interface dialog_box display dialog_box=system_command
+            CMD=! interface dialog display dialog=check_messages
+     BUTTON2  &Read Command File::F2
+            NAME=com_read
+            HELP=Read command file
+            CMD=! Note: F2 shortcut uses this
+            CMD=variable set variable_name = $_self.f2_file_name string_value = (eval(select_file("*.cmd;*.py","")))
+            CMD=variable set variable_name = $_self.f2_file_type string_value = (eval(STR_SPLIT($_self.f2_file_name,".")))
+            CMD=if condition = ($_self.f2_file_type[rows($_self.f2_file_type)]=="py")
+            CMD=   file python read file_name=(eval($_self.f2_file_name))
+            CMD=elseif condition = ($_self.f2_file_type[rows($_self.f2_file_type)]=="cmd")
+            CMD=   file command read file_name=(eval($_self.f2_file_name))
+            CMD=end
+            CMD=variable del variable_name = $_self.f2_file_name
+            CMD=variable del variable_name = $_self.f2_file_type
+     BUTTON2  &Log File...
+            NAME=show_view_log_file
+            HELP=Show View Log File
+            CMD=interface dialog_box display dialog_box=.gui.display_log_file
+     SEPARATOR2
+     MENU2  Macr&o
+          MENU3  Re&cord/Replay
+               HELP=Record/ Replay macros
+               BUTTON4  Record &Start
+                      HELP=Start the record
+                      CMD=macro begin_record macro_name=record_macro
+               BUTTON4  Record &End
+                      HELP=End the record
+                      CMD=macro end_record
+               BUTTON4  E&xecute Recorded Macro
+                      HELP=Execute Recorded Macro
+                      CMD=if cond=(db_exists(".record_macro"))
+                      CMD=   record_macro
+                      CMD=end
+               BUTTON4  &Write Recorded Macro
+                      HELP=Write Recorded Macro
+                      CMD=if cond=(db_exists(".record_macro"))
+                      CMD=   macro write macro=.record_macro
+                      CMD=end
+          BUTTON3  &Read...
+                 HELP=Read macro
+                 CMD=int command command="macro read"
+          BUTTON3  &Write...
+                 HELP=Write Macro
+                 CMD=int command command="macro write"
+          BUTTON3  &Debug...
+                 HELP=Debug Macro
+                 CMD=macro debug
+          SEPARATOR3
+          MENU3  &Edit
+               NAME=edit_macro
+               HELP=Create or modify a macro
+               BUTTON4  &New ...
+                      NAME=macro_new
+                      HELP=Create a Macro
+                      CMD=mdi gui_utl_display_cremod_dbox mode=create type=macro
+               BUTTON4  &Modify ...
+                      NAME=macro_select
+                      HELP=Select a Macro for edit
+                      CMD=mdi gui_utl_display_cremod_dbox mode=modify ent=(eval(select_object(none, "*", "macro")))
+               BUTTON4  &Delete ...
+                      NAME=macro_delete
+                      HELP=Select a Macro for deletion
+                      CMD=group empty group=select_list
+                      CMD=group object add group=select_list &
+                      CMD=      objects = (eval(select_objects( (none), "*", "macro")))
+                      CMD=if condition = (db_count("select_list", "objects") == 0)
+                      CMD=   return
+                      CMD=else
+                      CMD=   if condition=(db_type(.select_list.objects[1]) != "macro")
+                      CMD=      return
+                      CMD=   end
+                      CMD=end
+                      CMD=mdi delete_macro
+     MENU2  Me&nu
+          BUTTON3  &Modify...
+                 NAME=menu_build
+                 HELP=Modify a menu
+                 CMD=interface menubar build menubar=.gui.main.mmenu_menu.mbar_refresh
+          BUTTON3  &Read...
+                 HELP=Read a menu
+                 CMD=interface menubar read menubar=.gui.main.mmenu_menu.mbar_refresh file=?
+          BUTTON3  Read &local Main Menu
+                 CMD=interface menubar read menubar=.gui.main.mmenu_menu.mbar_refresh file="main_vrefresh.mnu"
+     MENU2  Dialog &Box
+          HELP=Create, Modify, Display or delete a dialog
+          BUTTON3  &Create...
+                 NAME=panel_build
+                 HELP=Create a dialog box
+                 CMD=interface dialog build
+          BUTTON3  &Modify...
+                 HELP=Modify a dialog box
+                 CMD=interface dialog build dialog=.gui.?
+          BUTTON3  Disp&lay...
+                 HELP=Display a dialog box
+                 CMD=interface dialog display dialog=.gui.?
+          BUTTON3  &Delete...d
+                 HELP=Delete a dialog box
+                 CMD=int dia del dia=.gui.?
+     MENU2  R&ibbon
+          BUTTON3  &Read...
+                 HELP=Read a user provided Ribbon XML file
+                 CMD=interface ribbon read filename=?
+          BUTTON3  Read &local Ribbon
+                 CMD=interface ribbon read
+     SEPARATOR2
+     BUTTON2  Purge Cache Files
+            HELP=Purge cache files
+            CMD=file cache purge
+     BUTTON2  Command Server...
+            NAME=show_command_server
+            CMD=command_server show
+     SEPARATOR2
+	 BUTTON2  Measure &Distance...::Shift+D
+			HELP=Calculate the distances between positions
+			CMD=list_info measure i_marker_name=(eval(pick_object("marker"))) j_marker_name=(eval(pick_object("marker")))
+	 BUTTON2  To&ggle (De)Activate::Shift+A
+			HELP=Activate or Deactivate the selected objects
+			CMD=if cond=( eval(db_count( "select_list", "objects" ) ))
+			CMD=   if cond=(eval(db_active(.select_list.objects[1])))
+			CMD=      entity attributes entity_name=(eval(.select_list.objects)) active=off depend=off
+                     CMD=      interface model_browser refresh
+			CMD=   else
+			CMD=      entity attributes entity_name=(eval(.select_list.objects)) active=no_opinion depend=no_opinion
+			CMD=   end
+			CMD=else
+			CMD=   entity attributes entity_name=(eval(select_objects(NONE, "", ""))) active=no_opinion depend=no_opinion
+			CMD=end
+	 BUTTON2  Show/Hide::Ctrl+H
+			HELP=Show or Hide the selected objects
+			CMD=if cond=( eval(db_count( "select_list", "objects" ) ))
+			CMD=   entity attributes entity_name=(eval(.select_list.objects)) visibility=toggle
+			CMD=   interface model_browser refresh
+			CMD=else
+			CMD=   entity attributes entity_name=(eval(select_objects(NONE, "", ""))) visibility=no_opinion
+			CMD=   interface model_browser refresh
+			CMD=end
+	 BUTTON2  Show/Hide Others::Shift+H
+			HELP=Show or Hide all except the selected objects
+			CMD=hide_others
+	 BUTTON2  Mid Marker::Shift+Ctrl+D
+			HELP=Show or Hide the selected objects
+			CMD=athorn mid_marker part=(eval(pick_object("part"))) i_marker=(eval(pick_object("marker"))) j_marker=(eval(pick_object("marker")))
+	 BUTTON2  Create Marker::Ctrl+M
+			HELP=Create a marker
+                     CMD=var set var=.gui.main.tst_ribbon int=(eval(show_def_con()))
+                     CMD=int cont und cont =.gui.main.defn_cont.*
+                     CMD=int cont dis cont = .gui.main.defn_cont.marker_container
+                     CMD=int mode repeat=multiple mode=marker
+	 BUTTON2  Center On::Shift+C
+			HELP=Center on the selected object
+                     CMD=view center view_name = (eval(DB_DEFAULT( .system_defaults , "view" ))) object_coords = (eval(loc_global({0,0,0}, select_list.objects[1]))) adjust_view = yes 
+	 BUTTON2  Pick::Ctrl+P
+			HELP=Pick an object from the screen to add it to the select list
+                     CMD=athorn pick_from_screen
+	 BUTTON2  Toggle Names::Shift+N
+			HELP=Toggle Name Visibility
+                     CMD=entity attributes entity_name = .* name_visibility = toggle 
