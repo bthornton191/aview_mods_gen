@@ -27,7 +27,7 @@ Update the **aviewBS.cmd** script to load your customizations. This **aviewBS.cm
 
 > Note: Other **aviewBS.cmd** scripts which may normally run during startup (e.g. **$HOME/aviewBS.cmd**) will not run unless you explicitly run them from this new **aviewBS.cmd** script.
 
-## Making registry edits to create windows context menu options for opening Adams
+## Adding windows context menu options for opening Adams
 ### Step 1
 Set a **ADAMS_LAUNCH_COMMAND** environment variable equal to the path to your **mdi.bat** script (e.g. **C:\Program Files\Adams\2021_1_801488\common\mdi.bat**).
 
