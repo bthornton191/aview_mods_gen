@@ -65,6 +65,6 @@ end
 
 
 ! Add some paths
-aview toolkit putenv &
-    env = "PATH" &
-    value = (eval(str_replace_all(getenv("topdir"), "/", "\\\\") // "python\\\\win64;" // str_replace_all(getenv("topdir"), "/", "\\\\") // "python\\\\win64\\\\DLLs;" // str_replace_all(getenv("topdir"), "/", "\\\\") // "python\\\\win64\\\\Scripts;" // str_replace_all(getenv("path"), "\\", "\\\\")))
+! aview toolkit putenv &
+!     env = "PATH" &
+!     value = (eval(str_replace_all(getenv("topdir"), "/", "\\\\") // "python\\\\win64;" // str_replace_all(getenv("topdir"), "/", "\\\\") // "python\\\\win64\\\\DLLs;" // str_replace_all(getenv("topdir"), "/", "\\\\") // "python\\\\win64\\\\Scripts;" // str_replace_all(getenv("path"), "\\", "\\\\")))

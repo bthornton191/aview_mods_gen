@@ -1,0 +1,13 @@
+.cmd $aview_dir/../../aview_mods_gen/
+.cmd .
+.cmd $aview_dir/
+.cmd $HOME/
+.bin $adams_bindir/
+.dct $aview_dir/../dct/
+
+.pst $HOME/private.adb/
+.prm $HOME/private.adb/
+
+.cmd $ppt_dir/
+
+.mnf $aview_dir/../../mnf/
