@@ -1,0 +1,7 @@
+{
+    "python.analysis.extraPaths": [
+        "C:\\Users\\bthornt\\Code\\thornpy",
+        "C:\\Users\\bthornt\\Code\\adamspy",
+        "c:\\Users\\ben.thornton\\.vscode\\extensions\\adams_vscode\\resources\\adamspy"
+    ]
+}

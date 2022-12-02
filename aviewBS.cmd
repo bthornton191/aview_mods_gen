@@ -5,6 +5,7 @@ defaults solver compatibility_checking = off
 
 colors modify color_name = Background red=(.43*.57) green=(.84*.57) blue=(.97*.57)
 defaults icon_naming show_as = partial_name
+
 ! Load Custom Menu
 interface menubar read menubar=.gui.main.mmenu_menu.mbar_refresh file="C:\Program Files\MSC.Software\Adams\aview_mods_gen\menu.mnu"
 
@@ -27,6 +28,20 @@ var set var=.mdi.tmp_int int=(eval(putenv("NO_LAPI_MESSAGES​", "1")))
 ! Random Customizations
 interface field    display field_name=.gui.sim_int_panel.c_interactive.step_size
 interface field undisplay field_name=.gui.sim_int_panel.c_interactive.number_of_steps
+
+! Hide buttons I don't use
+int push_button undisplay push_button_name = .gui.main.standard_toolbar.view_fit 
+int push_button undisplay push_button_name = .gui.main.standard_toolbar.zoom_box 
+int push_button undisplay push_button_name = .gui.main.standard_toolbar.view_center 
+int btn_stack undisplay btn_stack_name = .gui.main.standard_toolbar.dyn_view_tra_ro 
+int btn_stack undisplay btn_stack_name = .gui.main.standard_toolbar.dyn_tra_depth 
+int push_button undisplay push_button_name = .gui.main.standard_toolbar.view_zoom 
+int field display field_name = .gui.main.standard_toolbar.*
+! ---------------------------------------------------------------------
+! Run Startup Scripts
+! ---------------------------------------------------------------------
+file command read file = "C:\Program Files\MSC.Software\Adams\aview_mods_gen\part_multi_edit.cmd"
+file command read file = "C:\Program Files\MSC.Software\Adams\aview_mods_gen\vis_buttons.cmd"
 
 ! ---------------------------------------------------------------------
 ! Settings
@@ -62,6 +77,7 @@ default report base_font_size=5
 if condition=(eval(file_exists(getenv("MSC_ADAMS_STARTIN_DIR") // "\\aviewBS.cmd")))
 	file command read file_name=(eval(getenv("MSC_ADAMS_STARTIN_DIR") // "\\aviewBS.cmd"))
 end
+
 
 
 ! Add some paths

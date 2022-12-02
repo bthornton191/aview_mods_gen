@@ -325,7 +325,10 @@ MENU1  &View
             NAME=cmd
             HELP=Toggle visibility of command window
             CMD=interface cmd_window display=toggle
-            CMD=interface cursor warp gui_name=.gui.command_panel.command_line
+            CMD=var set var=.mdi.tmpint int=(eval(run_python_code("from PyQt4.QtGui import QApplication")))
+            CMD=var set var=.mdi.tmpint int=(eval(run_python_code("edit = next(w for w in next(w for w in QApplication.instance().topLevelWidgets() if w.objectName() == 'command_panel').children() if w.objectName() == 'command_line')")))
+            CMD=var set var=.mdi.tmpint int=(eval(run_python_code("edit.setFocus()")))
+            CMD=var set var=.mdi.tmpint int=(eval(run_python_code("edit.selectAll()")))
      BUTTON2  C&oordinate Window::F4
             NAME=coord
             HELP=Toggle visibility of coordinate window
@@ -337,6 +340,14 @@ MENU1  &View
             CMD=int dialog undisplay dialog=.gui.msg_box
             CMD=else
             CMD=int dialog display dialog=.gui.msg_box
+            CMD=end
+     BUTTON2  Post-Processor::F8
+            NAME=ppt
+            HELP=Display the Post-Processor
+            CMD=if cond =(.gui.ppt_main.displayed)
+            CMD=    int window undisplay window_name = .gui.ppt_main 
+            CMD=else
+            CMD=    int window display window_name = .gui.ppt_main 
             CMD=end
      SEPARATOR2
      MENU2  Pre-&Set
@@ -761,3 +772,18 @@ MENU1  &Tools
 	 BUTTON2  Toggle Names::Shift+N
 			HELP=Toggle Name Visibility
                      CMD=entity attributes entity_name = .* name_visibility = toggle 
+	 BUTTON2  List Info::Shift+I
+			HELP=List info for current selection
+                     CMD=interface dialog undisplay dialog=.gui.info_window
+                     CMD=if cond=( db_count( "select_list", "objects" ) )
+                     CMD=   list ent ent=(eval(.SELECT_LIST.objects))
+                     CMD=else
+                     CMD=   interface database_navigator display=on
+                     CMD=end
+	 BUTTON2  Filter Tree::Shift+Ctrl+F
+			HELP=Jump To Tree Filter Box
+                     CMD=var set var=.mdi.tmpint int=(eval(run_python_code("from PyQt4.QtGui import QApplication, QTextEdit")))
+                     CMD=var set var=.mdi.tmpint int=(eval(run_python_code("app = QApplication.instance()")))
+                     CMD=var set var=.mdi.tmpint int=(eval(run_python_code("search = next(w for w in app.allWidgets() if 'search' in w.objectName().lower())")))
+                     CMD=var set var=.mdi.tmpint int=(eval(run_python_code("search.setFocus()")))
+                     CMD=var set var=.mdi.tmpint int=(eval(run_python_code("search.selectAll()")))
