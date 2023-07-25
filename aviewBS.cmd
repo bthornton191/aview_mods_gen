@@ -1,5 +1,7 @@
 ! Aview startup commands
 
+file log_file messages_include = on commands_include = on
+
 ! needed to be sure ADrill runs at optimum speed in batch mode
 defaults solver compatibility_checking = off
 
@@ -40,7 +42,7 @@ int field display field_name = .gui.main.standard_toolbar.*
 ! ---------------------------------------------------------------------
 ! Run Startup Scripts
 ! ---------------------------------------------------------------------
-file command read file = "C:\Program Files\MSC.Software\Adams\aview_mods_gen\part_multi_edit.cmd"
+! file command read file = "C:\Program Files\MSC.Software\Adams\aview_mods_gen\part_multi_edit.cmd"
 file command read file = "C:\Program Files\MSC.Software\Adams\aview_mods_gen\vis_buttons.cmd"
 
 ! ---------------------------------------------------------------------
@@ -70,6 +72,10 @@ default plotting axis_numbers_font_size=5
 default plotting axis_label_font_size=5
 default report base_font_size=5
 
+! ---------------------------------------------------------------------
+! Run Python Setup
+! ---------------------------------------------------------------------
+file python read file="C:\Program Files\MSC.Software\Adams\aview_mods_gen\setup.py"
 
 ! ---------------------------------------------------------------------
 ! Load user aviewBS.cmd

@@ -771,7 +771,7 @@ MENU1  &Tools
                      CMD=athorn pick_from_screen
 	 BUTTON2  Toggle Names::Shift+N
 			HELP=Toggle Name Visibility
-                     CMD=entity attributes entity_name = .* name_visibility = toggle 
+                     CMD=entity attributes entity_name = .* type_filter = modeling name_visibility = toggle 
 	 BUTTON2  List Info::Shift+I
 			HELP=List info for current selection
                      CMD=interface dialog undisplay dialog=.gui.info_window
@@ -787,3 +787,12 @@ MENU1  &Tools
                      CMD=var set var=.mdi.tmpint int=(eval(run_python_code("search = next(w for w in app.allWidgets() if 'search' in w.objectName().lower())")))
                      CMD=var set var=.mdi.tmpint int=(eval(run_python_code("search.setFocus()")))
                      CMD=var set var=.mdi.tmpint int=(eval(run_python_code("search.selectAll()")))
+	 BUTTON2  Reload Startup Script::Shift+Ctrl+R
+            NAME=refresh_btn
+			HELP=Reload aview.cmd and aviewAS.cmd
+                     CMD=if condition=(FILE_EXISTS("aview.cmd"))
+                     CMD=   file command read file="aview.cmd"
+                     CMD=end
+                     CMD=if condition=(FILE_EXISTS("aviewAS.cmd"))
+                     CMD=   file command read file="aviewAS.cmd"
+                     CMD=end
