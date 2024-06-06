@@ -4,6 +4,6 @@
 !$j_marker:t=marker
 !END_OF_PARAMETERS
 marker create &
-	marker_name = (eval(unique_partial_name($part, "marker"))) &
+	marker_name = (eval(UNIQUE_NAME_IN_HIERARCHY("$part.marker"))) &
 	location = (eval(dx($j_marker, $i_marker, $i_marker)/2)), (eval(dy($j_marker, $i_marker, $i_marker)/2)), (eval(dz($j_marker, $i_marker, $i_marker)/2)) &
 	relative_to = $i_marker
