@@ -1,0 +1,15 @@
+!USER_ENTERED_COMMAND athorn fbd
+! -----------------------------------------------------------------
+! MACRO NAME:  fbd.mac
+! DESCRIPTION: description   
+! AUTHOR:      Ben Thornton (ben.thornton@hexagon.com)
+!$part:t=part
+!$analysis:t=analysis
+!END_OF_PARAMETERS
+! -----------------------------------------------------------------
+
+var set var=$_self.py_str str="from aviewpy.utils.fbd import show_fbd"
+var set var=$_self.py_str str=(eval($_self.py_str)), "part=Adams.stoo('$part')"
+var set var=$_self.py_str str=(eval($_self.py_str)), "ans=Adams.stoo('$analysis')"
+var set var=$_self.py_str str=(eval($_self.py_str)), "show_fbd(ans, part)"
+var set var=$_self.tmp_int int=(eval(run_python_code(str_merge_strings("\\n", $_self.py_str))))
