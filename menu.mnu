@@ -347,7 +347,7 @@ MENU1  &View
             CMD=if cond =(.gui.ppt_main.displayed)
             CMD=    int window undisplay window_name = .gui.ppt_main 
             CMD=else
-            CMD=    int window display window_name = .gui.ppt_main 
+            CMD=    interface plot window open
             CMD=end
      SEPARATOR2
      MENU2  Pre-&Set
